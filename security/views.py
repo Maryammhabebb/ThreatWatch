@@ -4,11 +4,25 @@ from rest_framework.views import APIView
 
 from security.models import Alert, SecurityEvent
 from security.serializers import AlertSerializer, SecurityEventSerializer
+from security.services import analyze_security_event
 
 
 class SecurityEventListCreateView(generics.ListCreateAPIView):
     queryset = SecurityEvent.objects.all()
     serializer_class = SecurityEventSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        event = serializer.save()
+        generated_alerts = analyze_security_event(event)
+        headers = self.get_success_headers(serializer.data)
+
+        data = {
+            "event": SecurityEventSerializer(event, context=self.get_serializer_context()).data,
+            "generated_alerts": AlertSerializer(generated_alerts, many=True).data,
+        }
+        return Response(data, status=201, headers=headers)
 
 
 class AlertListView(generics.ListAPIView):
