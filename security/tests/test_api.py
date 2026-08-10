@@ -160,6 +160,18 @@ def test_invalid_ip_address(api_client):
 
 
 @pytest.mark.django_db
+def test_invalid_timestamp(api_client):
+    response = api_client.post(
+        "/api/events/",
+        event_payload(timestamp="not-a-timestamp"),
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert "timestamp" in response.data
+
+
+@pytest.mark.django_db
 def test_empty_username_is_rejected(api_client):
     response = api_client.post(
         "/api/events/",

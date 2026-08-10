@@ -10,7 +10,10 @@ from security.services import analyze_security_event
 class Command(BaseCommand):
     help = "Create demonstration security events and alerts for ThreatWatch."
 
+    demo_ip_addresses = ["192.168.1.10", "10.0.0.15", "10.0.0.20", "10.0.0.30", "192.168.1.50"]
+
     def handle(self, *args, **options):
+        self._reset_demo_data()
         base_time = timezone.now().replace(microsecond=0)
         scenarios = [
             *self._normal_activity(base_time),
@@ -34,6 +37,10 @@ class Command(BaseCommand):
                 f"Total alerts: {Alert.objects.count()}."
             )
         )
+
+    def _reset_demo_data(self):
+        Alert.objects.filter(ip_address__in=self.demo_ip_addresses).delete()
+        SecurityEvent.objects.filter(ip_address__in=self.demo_ip_addresses).delete()
 
     def _normal_activity(self, start):
         return [
