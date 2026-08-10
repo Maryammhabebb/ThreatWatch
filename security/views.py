@@ -46,4 +46,19 @@ class AlertListView(generics.ListAPIView):
 
 class AlertSummaryView(APIView):
     def get(self, request):
-        return Response({})
+        return Response(
+            {
+                "total_alerts": Alert.objects.count(),
+                "low_severity": Alert.objects.filter(severity=Alert.Severity.LOW).count(),
+                "medium_severity": Alert.objects.filter(severity=Alert.Severity.MEDIUM).count(),
+                "high_severity": Alert.objects.filter(severity=Alert.Severity.HIGH).count(),
+                "critical_severity": Alert.objects.filter(severity=Alert.Severity.CRITICAL).count(),
+                "brute_force": Alert.objects.filter(alert_type=Alert.AlertType.BRUTE_FORCE).count(),
+                "multiple_accounts": Alert.objects.filter(
+                    alert_type=Alert.AlertType.MULTIPLE_ACCOUNTS
+                ).count(),
+                "suspicious_activity": Alert.objects.filter(
+                    alert_type=Alert.AlertType.SUSPICIOUS_ACTIVITY
+                ).count(),
+            }
+        )
